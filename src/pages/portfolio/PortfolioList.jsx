@@ -69,11 +69,11 @@ const mockPortfolioData = [
     date: 'Dec 1, 2024',
   },
   {
-      id: 6,
-      thumbnail: 'https://images.unsplash.com/photo-1484154218962-a1c002085d2f?w=150&h=100&fit=crop',
-      title: 'Urban Loft Renovation',
-      category: 'Residential',
-      date: 'Jul 22, 2024'
+    id: 6,
+    thumbnail: 'https://images.unsplash.com/photo-1484154218962-a1c002085d2f?w=150&h=100&fit=crop',
+    title: 'Urban Loft Renovation',
+    category: 'Residential',
+    date: 'Jul 22, 2024'
   }
 ];
 
@@ -99,8 +99,8 @@ const PortfolioList = () => {
 
   // Filter data based on formik values
   const filteredData = mockPortfolioData.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(formik.values.search.toLowerCase()) || 
-                          item.category.toLowerCase().includes(formik.values.search.toLowerCase());
+    const matchesSearch = item.title.toLowerCase().includes(formik.values.search.toLowerCase()) ||
+      item.category.toLowerCase().includes(formik.values.search.toLowerCase());
     const matchesCategory = formik.values.category === 'All Categories' || item.category === formik.values.category;
     return matchesSearch && matchesCategory;
   });
@@ -117,8 +117,8 @@ const PortfolioList = () => {
   };
 
   return (
-    <Box sx={{ p: 4, minHeight: '100vh', backgroundColor: '#F9FAFB', width: '60%', margin: 'auto' }}>
-        
+    <Box sx={{ p: 4, minHeight: '100vh', width: '85%', margin: 'auto' }}>
+
       {/* Header Section */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
@@ -130,7 +130,7 @@ const PortfolioList = () => {
           </Typography>
         </Box>
         <Stack direction="row" spacing={2} alignItems="center">
-           {/* <Box sx={{ bgcolor: 'white', borderRadius: 1, border: '1px solid #E5E7EB', display: 'flex' }}>
+          {/* <Box sx={{ bgcolor: 'white', borderRadius: 1, border: '1px solid #E5E7EB', display: 'flex' }}>
               <Button 
                 startIcon={<GridViewIcon />} 
                 sx={{ 
@@ -188,15 +188,15 @@ const PortfolioList = () => {
               value={formik.values.search}
               onChange={formik.handleChange}
               variant="outlined"
-               size="small"
+              size="small"
               slotProps={{
                 input: {
-                    startAdornment: (
+                  startAdornment: (
                     <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#9CA3AF' }} />
+                      <SearchIcon sx={{ color: '#9CA3AF' }} />
                     </InputAdornment>
-                    ),
-                    sx: { borderRadius: 2, bgcolor: 'white', '& fieldset': { borderColor: '#E5E7EB' } }
+                  ),
+                  sx: { borderRadius: 2, bgcolor: 'white', '& fieldset': { borderColor: '#E5E7EB' } }
                 }
               }}
             />
@@ -239,17 +239,17 @@ const PortfolioList = () => {
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>Thumbnail</TableCell>
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
-                    Title <FilterListIcon sx={{ fontSize: 16, color: '#9CA3AF' }} />
+                  Title <FilterListIcon sx={{ fontSize: 16, color: '#9CA3AF' }} />
                 </Stack>
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
-                 <Stack direction="row" alignItems="center" spacing={0.5}>
-                    Category <FilterListIcon sx={{ fontSize: 16, color: '#9CA3AF' }} />
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  Category <FilterListIcon sx={{ fontSize: 16, color: '#9CA3AF' }} />
                 </Stack>
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
-                 <Stack direction="row" alignItems="center" spacing={0.5}>
-                    Date <FilterListIcon sx={{ fontSize: 16, color: '#9CA3AF' }} />
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  Date <FilterListIcon sx={{ fontSize: 16, color: '#9CA3AF' }} />
                 </Stack>
               </TableCell>
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }} align='right'>Actions</TableCell>
@@ -257,56 +257,57 @@ const PortfolioList = () => {
           </TableHead>
           <TableBody>
             {filteredData.map((row) => {
-               const style = getCategoryColor(row.category);
-               return (
-              <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <TableCell>
-                  <Box
-                    component="img"
-                    src={row.thumbnail}
-                    alt={row.title}
-                    sx={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 2 }}
-                  />
-                </TableCell>
-                <TableCell>
+              const style = getCategoryColor(row.category);
+              return (
+                <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell>
+                    <Box
+                      component="img"
+                      src={row.thumbnail}
+                      alt={row.title}
+                      sx={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 2 }}
+                    />
+                  </TableCell>
+                  <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 500, color: '#111827' }}>
-                        {row.title}
+                      {row.title}
                     </Typography>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={row.category}
-                    size="small"
-                    sx={{
-                      backgroundColor: style.bg,
-                      color: style.color,
-                      fontWeight: 500,
-                      borderRadius: 1,
-                      fontSize: '0.75rem',
-                      height: 24
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={row.category}
+                      size="small"
+                      sx={{
+                        backgroundColor: style.bg,
+                        color: style.color,
+                        fontWeight: 500,
+                        borderRadius: 1,
+                        fontSize: '0.75rem',
+                        height: 24
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
                     <Typography variant="body2" color="text.secondary">
-                        {row.date}
+                      {row.date}
                     </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <IconButton size="small" sx={{ color: '#EF4444' }}><VisibilityIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" sx={{ color: '#22C55E' }}><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" sx={{ color: '#EF4444' }}><DeleteIcon fontSize="small" /></IconButton>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            )})}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <IconButton size="small" sx={{ color: '#EF4444' }}><VisibilityIcon fontSize="small" /></IconButton>
+                      <IconButton size="small" sx={{ color: '#22C55E' }}><EditIcon fontSize="small" /></IconButton>
+                      <IconButton size="small" sx={{ color: '#EF4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
         {filteredData.length === 0 && (
-            <Box p={4} textAlign="center">
-                <Typography color="text.secondary">No projects found.</Typography>
-            </Box>
+          <Box p={4} textAlign="center">
+            <Typography color="text.secondary">No projects found.</Typography>
+          </Box>
         )}
       </TableContainer>
     </Box>
