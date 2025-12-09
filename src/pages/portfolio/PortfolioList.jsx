@@ -117,7 +117,8 @@ const PortfolioList = () => {
   };
 
   return (
-    <Box sx={{ p: 4, minHeight: '100vh', width: '85%', margin: 'auto' }}>
+    <Container maxWidth="lg" sx={{ py: 4, minHeight: '100vh' }}>
+    {/* <Box sx={{ p: 4, minHeight: '100vh', margin: 'auto' }}> */}
 
       {/* Header Section */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
@@ -310,7 +311,8 @@ const PortfolioList = () => {
           </Box>
         )}
       </TableContainer>
-    </Box>
+    {/* </Box> */}
+    </Container>
   );
 };
 
