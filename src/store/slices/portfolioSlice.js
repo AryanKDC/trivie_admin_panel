@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '../../api/axios';
 
 const initialState = {
     items: [],
@@ -26,9 +26,7 @@ const initialState = {
 
 export const fetchTags = createAsyncThunk('portfolio/fetchTags', async (_, { rejectWithValue }) => {
     try {
-        const response = await axios.get(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:2000/api/v1'}/portfolio/tags`,
-        );
+        const response = await axiosInstance.get('/portfolio/tags');
         return response.data.data;
     } catch (error) {
         return rejectWithValue(error.response?.data || 'Failed to fetch tags');
@@ -44,8 +42,6 @@ export const fetchPortfolios = createAsyncThunk(
         const params = {
             page: pagination.page,
             limit: pagination.limit,
-            sortBy: sort.key,
-            sort: sort.direction,
             sortBy: sort.key,
             sort: sort.direction,
             search: typeof search === 'string' ? search : '', // Global search, ensure strictly string
@@ -67,11 +63,7 @@ export const fetchPortfolios = createAsyncThunk(
                 .filter((tag) => tag);
         }
 
-        const response = await axios.post(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:2000/api/v1'}/portfolio/get`,
-            body,
-            { params },
-        );
+        const response = await axiosInstance.post('/portfolio/get', body, { params });
         return response.data;
     },
 );
@@ -80,15 +72,11 @@ export const addPortfolio = createAsyncThunk(
     'portfolio/addPortfolio',
     async (formData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_API_URL || 'http://localhost:2000/api/v1'}/portfolio/add`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
+            const response = await axiosInstance.post('/portfolio/add', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
                 },
-            );
+            });
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
