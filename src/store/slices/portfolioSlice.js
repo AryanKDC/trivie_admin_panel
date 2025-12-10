@@ -72,7 +72,7 @@ export const addPortfolio = createAsyncThunk(
     'portfolio/addPortfolio',
     async (formData, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('/portfolio/add', formData, {
+            const response = await axiosInstance.post('/portfolio/add-portfolio', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

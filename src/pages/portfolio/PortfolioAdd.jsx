@@ -21,13 +21,15 @@ import {
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addPortfolio } from "../../store/slices/portfolioSlice";
 
 // Validation Schema
 const validationSchema = Yup.object({
   projectTitle: Yup.string().required("Project Title is required"),
   category: Yup.string().required("Category is required"),
-  thumbnail: Yup.mixed().required("Thumbnail is required"),
-  gallery: Yup.array().min(1, "At least 1 gallery image is required"),
+  thumbnail_image: Yup.mixed().required("Thumbnail is required"),
+  images_gallery: Yup.array().min(1, "At least 1 gallery image is required"),
   challenge: Yup.string().required("Challenge description is required"),
   solution: Yup.string().required("Solution description is required"),
   result: Yup.string().required("Result description is required"),
@@ -43,14 +45,15 @@ const categories = [
 
 const PortfolioAdd = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
 
   const initialValues = {
     projectTitle: "",
     category: "",
-    thumbnail: null,
-    gallery: [],
+    thumbnail_image: null,
+    images_gallery: [],
     challenge: "",
     solution: "",
     result: "",
@@ -59,7 +62,7 @@ const PortfolioAdd = () => {
   const handleThumbnailChange = (e, setFieldValue) => {
     const file = e.target.files[0];
     if (file) {
-      setFieldValue("thumbnail", file);
+      setFieldValue("thumbnail_image", file);
       setThumbnailPreview(URL.createObjectURL(file));
     }
   };
@@ -67,7 +70,7 @@ const PortfolioAdd = () => {
   const handleGalleryChange = (e, setFieldValue, currentGallery) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setFieldValue("gallery", [...currentGallery, ...files]);
+      setFieldValue("images_gallery", [...currentGallery, ...files]);
       const newPreviews = files.map((file) => URL.createObjectURL(file));
       setGalleryPreviews((prev) => [...prev, ...newPreviews]);
     }
@@ -75,7 +78,7 @@ const PortfolioAdd = () => {
 
   const removeGalleryImage = (index, setFieldValue, currentGallery) => {
     const newGallery = currentGallery.filter((_, i) => i !== index);
-    setFieldValue("gallery", newGallery);
+    setFieldValue("images_gallery", newGallery);
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -91,7 +94,7 @@ const PortfolioAdd = () => {
     dashedColor = "#ccc", // default gray dashed
   }) => (
     <Box>
-       <Typography
+      <Typography
         variant="body2"
         color={error && touched ? "error" : "text.secondary"}
         fontWeight={500}
@@ -104,7 +107,7 @@ const PortfolioAdd = () => {
           {subLabel}
         </Typography>
       )}
-      
+
       <Button
         component="label"
         fullWidth
@@ -134,7 +137,7 @@ const PortfolioAdd = () => {
         />
         {icon || <CloudUploadIcon sx={{ fontSize: 32, mb: 1, color: "#9ca3af" }} />}
         <Typography variant="body2">{subLabel || "Click to upload"}</Typography>
-         {multiple && <Typography variant="caption" sx={{mt: 0.5}}>You can select multiple images at once</Typography>}
+        {multiple && <Typography variant="caption" sx={{ mt: 0.5 }}>You can select multiple images_gallery at once</Typography>}
       </Button>
       {touched && error && (
         <FormHelperText error>{error}</FormHelperText>
@@ -194,9 +197,21 @@ const PortfolioAdd = () => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={(values) => {
-              console.log("Form Submitted:", values);
-              alert("Portfolio project added! (Check console for data)");
+            onSubmit={async (values) => {
+              const formData = new FormData();
+              formData.append("projectTitle", values.projectTitle);
+              formData.append("category", values.category);
+              formData.append("challenge", values.challenge);
+              formData.append("solution", values.solution);
+              formData.append("result", values.result);
+
+              if (values.thumbnail_image) {
+                formData.append("thumbnail_image", values.thumbnail_image);
+              }
+
+              values.images_gallery.forEach(file => formData.append("images_gallery", file));
+
+              await dispatch(addPortfolio(formData));
             }}
           >
             {({
@@ -265,10 +280,10 @@ const PortfolioAdd = () => {
                   <Box>
                     <UploadBox
                       label="Thumbnail Image"
-                      subLabel="Click to upload thumbnail"
-                         icon={<CloudUploadIcon sx={{ fontSize: 32, mb: 1, color: "#9ca3af" }} />}
-                      error={errors.thumbnail}
-                      touched={touched.thumbnail}
+                      subLabel="Click to upload thumbnail_image"
+                      icon={<CloudUploadIcon sx={{ fontSize: 32, mb: 1, color: "#9ca3af" }} />}
+                      error={errors.thumbnail_image}
+                      touched={touched.thumbnail_image}
                       onChange={(e) => handleThumbnailChange(e, setFieldValue)}
                       dashedColor="#90caf9" // slight blue tint as per some designs, or stick to gray
                     />
@@ -284,46 +299,46 @@ const PortfolioAdd = () => {
                             border: "1px solid #eee",
                           }}
                         />
-                         <IconButton
-                            size="small"
-                            onClick={() => {
-                                setFieldValue("thumbnail", null);
-                                setThumbnailPreview(null);
-                            }}
-                            sx={{
-                              position: "absolute",
-                              top: -8,
-                              right: -8,
-                              bgcolor: "white",
-                              border: "1px solid #eee",
-                              "&:hover": { bgcolor: "#f5f5f5" },
-                            }}
-                          >
-                            <CloseIcon fontSize="small" />
-                          </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setFieldValue("thumbnail_image", null);
+                            setThumbnailPreview(null);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            top: -8,
+                            right: -8,
+                            bgcolor: "white",
+                            border: "1px solid #eee",
+                            "&:hover": { bgcolor: "#f5f5f5" },
+                          }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
                       </Box>
                     )}
                   </Box>
 
                   {/* Gallery Images */}
                   <Box>
-                      {/* Red dashed color for gallery as seen in some designs for 'required' or just style */}
+                    {/* Red dashed color for images_gallery as seen in some designs for 'required' or just style */}
                     <Typography
-                        variant="body2"
-                        fontWeight={500}
-                        mb={1}
+                      variant="body2"
+                      fontWeight={500}
+                      mb={1}
                     >
-                        Upload Gallery <span style={{ color: "#DC0000" }}>*</span>
+                      Upload Gallery <span style={{ color: "#DC0000" }}>*</span>
                     </Typography>
-                     <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                        Upload multiple images for the project gallery (minimum 1 required)
+                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                      Upload multiple images for the project images (minimum 1 required)
                     </Typography>
-                     <Button
-                        component="label"
-                        fullWidth
-                        sx={{
+                    <Button
+                      component="label"
+                      fullWidth
+                      sx={{
                         height: 120,
-                        border: `1.5px dashed ${touched.gallery && errors.gallery ? "#d32f2f" : "#ff4d4d"}`, // Red dashed border
+                        border: `1.5px dashed ${touched.images_gallery && errors.images_gallery ? "#d32f2f" : "#ff4d4d"}`, // Red dashed border
                         bgcolor: '#fff5f5', // light red background tint?
                         borderRadius: 2,
                         display: "flex",
@@ -333,23 +348,23 @@ const PortfolioAdd = () => {
                         textTransform: "none",
                         color: "#6b7280",
                         "&:hover": {
-                            backgroundColor: "#ffecec",
+                          backgroundColor: "#ffecec",
                         },
-                        }}
+                      }}
                     >
-                        <input
+                      <input
                         type="file"
                         hidden
                         accept="image/*"
                         multiple
-                        onChange={(e) => handleGalleryChange(e, setFieldValue, values.gallery)}
-                        />
-                        <CloudUploadIcon sx={{ fontSize: 32, mb: 1, color: "#9ca3af" }} />
-                        <Typography variant="body2" color="textSecondary">Click to upload gallery images</Typography>
-                        <Typography variant="caption" color="textSecondary">You can select multiple images at once</Typography>
+                        onChange={(e) => handleGalleryChange(e, setFieldValue, values.images_gallery)}
+                      />
+                      <CloudUploadIcon sx={{ fontSize: 32, mb: 1, color: "#9ca3af" }} />
+                      <Typography variant="body2" color="textSecondary">Click to upload images_gallery images_gallery</Typography>
+                      <Typography variant="caption" color="textSecondary">You can select multiple images_gallery at once</Typography>
                     </Button>
-                     {touched.gallery && errors.gallery && (
-                        <FormHelperText error>{errors.gallery}</FormHelperText>
+                    {touched.images_gallery && errors.images_gallery && (
+                      <FormHelperText error>{errors.images_gallery}</FormHelperText>
                     )}
 
                     {/* Gallery Previews */}
@@ -372,7 +387,7 @@ const PortfolioAdd = () => {
                               <IconButton
                                 size="small"
                                 onClick={() =>
-                                  removeGalleryImage(index, setFieldValue, values.gallery)
+                                  removeGalleryImage(index, setFieldValue, values.images_gallery)
                                 }
                                 sx={{
                                   position: "absolute",
@@ -395,17 +410,17 @@ const PortfolioAdd = () => {
                   {/* Text Areas: Challenge, Solution, Result */}
                   {["challenge", "solution", "result"].map((field) => (
                     <Box key={field}>
-                       <Typography variant="body2" fontWeight={500} mb={1}>
-                            {field === "challenge" ? "The Challenge" : field === "solution" ? "Our Solution" : "The Result"} <span style={{ color: "#DC0000" }}>*</span>
-                        </Typography>
+                      <Typography variant="body2" fontWeight={500} mb={1}>
+                        {field === "challenge" ? "The Challenge" : field === "solution" ? "Our Solution" : "The Result"} <span style={{ color: "#DC0000" }}>*</span>
+                      </Typography>
                       <TextField
                         fullWidth
                         multiline
                         rows={3}
                         placeholder={
-                            field === "challenge" ? "Describe the challenge faced in this project..." 
+                          field === "challenge" ? "Describe the challenge faced in this project..."
                             : field === "solution" ? "Describe your solution to the challenge..."
-                            : "Describe the outcome and results achieved..."
+                              : "Describe the outcome and results achieved..."
                         }
                         name={field}
                         value={values[field]}
@@ -453,7 +468,7 @@ const PortfolioAdd = () => {
                           minWidth: 100,
                           "&:hover": { borderColor: "#D1D5DB", bgcolor: "#f9fafb" },
                         }}
-                         onClick={() => navigate("/")}
+                        onClick={() => navigate("/")}
                       >
                         Cancel
                       </Button>
