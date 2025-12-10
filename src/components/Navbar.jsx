@@ -37,7 +37,10 @@ function Navbar() {
   };
 
   const isActive = (path) => {
-    if (path === '/' && location.pathname !== '/') return false;
+    // Special handling for Portfolio which is at root '/'
+    if (path === '/') {
+      return location.pathname === '/' || location.pathname.startsWith('/portfolio');
+    }
     return location.pathname.startsWith(path);
   };
 
