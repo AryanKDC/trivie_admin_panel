@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 
 // Mock Data matching the screenshot
 const mockPortfolioData = [
@@ -86,6 +87,7 @@ const validationSchema = Yup.object({
 });
 
 const PortfolioList = () => {
+  const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
       search: '',
@@ -160,6 +162,7 @@ const PortfolioList = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
+            onClick={() => navigate('/portfolio/add')}
             sx={{
               backgroundColor: '#DC0000', // Red color
               textTransform: 'none',
@@ -266,7 +269,7 @@ const PortfolioList = () => {
                       component="img"
                       src={row.thumbnail}
                       alt={row.title}
-                      sx={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 2 }}
+                      sx={{ width: 60, height: 58, objectFit: 'cover', borderRadius: 2 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -296,7 +299,13 @@ const PortfolioList = () => {
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <IconButton size="small" sx={{ color: '#EF4444' }}><VisibilityIcon fontSize="small" /></IconButton>
-                      <IconButton size="small" sx={{ color: '#22C55E' }}><EditIcon fontSize="small" /></IconButton>
+                      <IconButton 
+                        size="small" 
+                        sx={{ color: '#22C55E' }} 
+                        onClick={() => navigate(`/portfolio/edit/${row.id}`)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
                       <IconButton size="small" sx={{ color: '#EF4444' }}><DeleteIcon fontSize="small" /></IconButton>
                     </Stack>
                   </TableCell>
