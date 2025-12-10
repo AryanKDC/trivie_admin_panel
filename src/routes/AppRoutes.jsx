@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "../components/ProtectedRoute";
 import PortfolioList from "../pages/portfolio/PortfolioList";
 import CategoryList from "../pages/categories/CategoryList";
 import ListUsers from "../pages/users/ListUsers";
@@ -8,12 +9,15 @@ import PortfolioEdit from "../pages/portfolio/PortfolioEdit";
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<PortfolioList />} />
-    <Route path="/category" element={<CategoryList />} />
-    <Route path="/users" element={<ListUsers />} />
     <Route path="/login" element={<Login />} />
-    <Route path="/portfolio/add" element={<PortfolioAdd />} />
-    <Route path="/portfolio/edit/:id" element={<PortfolioEdit />} />
+
+    <Route element={<ProtectedRoute />}>
+      <Route path="/" element={<PortfolioList />} />
+      <Route path="/category" element={<CategoryList />} />
+      <Route path="/users" element={<ListUsers />} />
+      <Route path="/portfolio/add" element={<PortfolioAdd />} />
+      <Route path="/portfolio/edit/:id" element={<PortfolioEdit />} />
+    </Route>
   </Routes>
 );
 

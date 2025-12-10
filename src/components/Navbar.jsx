@@ -33,7 +33,9 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const handleLogout = () => {
-    navigate('/login');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    navigate('/login', { replace: true });
   };
 
   const isActive = (path) => {
