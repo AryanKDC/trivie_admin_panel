@@ -167,13 +167,15 @@ const PortfolioEdit = () => {
             textTransform: "none",
             bgcolor: "#DC0000",
             fontWeight: 600,
+            py: 1.5,
+            minWidth: 150,
             borderRadius: 2,
             boxShadow: "none",
             "&:hover": { bgcolor: "#b30000", boxShadow: "none" },
           }}
-          onClick={() => navigate(-1)} // Assuming cancel goes back
+          onClick={() => navigate("/portfolio/add")} // Assuming cancel goes back
         >
-          Cancel
+          Add Portfolio
         </Button>
       </Stack>
 

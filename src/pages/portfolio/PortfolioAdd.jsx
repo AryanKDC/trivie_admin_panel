@@ -169,12 +169,14 @@ const PortfolioAdd = () => {
           sx={{
             textTransform: "none",
             bgcolor: "#DC0000",
+            py: 1.5,
+            minWidth: 150,
             fontWeight: 600,
             borderRadius: 2,
             boxShadow: "none",
             "&:hover": { bgcolor: "#b30000", boxShadow: "none" },
           }}
-          onClick={() => navigate(-1)} // Assuming cancel goes back
+          onClick={() => navigate("/")} // Assuming cancel goes back
         >
           Cancel
         </Button>
