@@ -84,25 +84,31 @@ const ListUsers = () => {
         </Box>
         <Button
           variant="contained"
-          startIcon={showAddForm ? <CloseIcon /> : <AddIcon />}
+          startIcon={(showAddForm && !editingUser) ? <CloseIcon /> : <AddIcon />}
           onClick={() => {
-            if (showAddForm) handleCancel();
-            else setShowAddForm(true);
+            if (showAddForm && !editingUser) {
+              handleCancel();
+            } else {
+              setEditingUser(null);
+              setShowAddForm(true);
+            }
           }}
           sx={{
             backgroundColor: '#DC0000', // Red color
+            color: 'white',
             textTransform: 'none',
+            py: 1.5,
             fontWeight: 600,
             boxShadow: 'none',
             borderRadius: 2,
-            minWidth: 120,
+            minWidth: 150,
             '&:hover': {
               backgroundColor: '#B30000',
               boxShadow: 'none',
             },
           }}
         >
-          {showAddForm ? 'Cancel' : 'Add User'}
+          {(showAddForm && !editingUser) ? 'Cancel' : 'Add User'}
         </Button>
       </Stack>
 

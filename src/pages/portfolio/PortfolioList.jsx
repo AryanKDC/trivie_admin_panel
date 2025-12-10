@@ -166,9 +166,11 @@ const PortfolioList = () => {
             sx={{
               backgroundColor: '#DC0000', // Red color
               textTransform: 'none',
+              py: 1.5,
               fontWeight: 600,
               boxShadow: 'none',
               borderRadius: 2,
+              minWidth: 150,
               '&:hover': {
                 backgroundColor: '#B30000',
                 boxShadow: 'none',
