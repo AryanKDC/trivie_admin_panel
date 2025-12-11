@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -16,6 +16,8 @@ import {
   TextField,
   Typography,
   Collapse,
+  TablePagination,
+  Pagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,6 +28,8 @@ import {
 } from '@mui/icons-material';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
+import { addCategory, fetchCategories, updateCategory, deleteCategory, setPage } from '../../store/slices/categorySlice';
 
 // Validation Schema
 const categoryValidationSchema = Yup.object({
@@ -33,21 +37,19 @@ const categoryValidationSchema = Yup.object({
   description: Yup.string(),
 });
 
-// Mock Data
-const mockCategories = [
-  { id: 1, name: 'Residential', description: 'Home and apartment interior designs', date: 'Jan 1, 2024' },
-  { id: 2, name: 'Commercial', description: 'Business and commercial spaces', date: 'Jan 1, 2024' },
-  { id: 3, name: 'Hospitality', description: 'Hotels, resorts, and lodging spaces', date: 'Jan 1, 2024' },
-  { id: 4, name: 'Office', description: 'Corporate and office environments', date: 'Jan 1, 2024' },
-  { id: 5, name: 'Retail', description: 'Shops and retail stores', date: 'Jan 1, 2024' },
-  { id: 6, name: 'Restaurant', description: 'Dining and food service spaces', date: 'Jan 1, 2024' },
-  { id: 7, name: 'Healthcare', description: 'Medical and healthcare facilities', date: 'Jan 1, 2024' },
-  { id: 8, name: 'Educational', description: 'Schools and educational institutions', date: 'Jan 1, 2024' },
-];
-
 const CategoryList = () => {
+  const dispatch = useDispatch();
+  const { items: categories, status, pagination } = useSelector((state) => state.category);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch, pagination.page]); // Re-fetch when page changes
+
+  const handleChangePage = (event, newPage) => {
+    dispatch(setPage(newPage + 1)); // Material UI is 0-indexed, API usually 1-indexed
+  };
 
   // Handle Edit Click
   const handleEditClick = (category) => {
@@ -61,6 +63,18 @@ const CategoryList = () => {
     setEditingCategory(null);
   };
 
+  // Handle Delete
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this category?')) {
+        const res = await dispatch(deleteCategory(id));
+        if (res.meta.requestStatus === 'fulfilled') {
+            alert('Category deleted successfully');
+        } else {
+            alert(`Failed to delete category: ${res.payload?.message || 'Unknown error'}`);
+        }
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4, minHeight: '100vh' }}>
       
@@ -71,7 +85,7 @@ const CategoryList = () => {
             Category Management
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {mockCategories.length} categories
+            {categories.length} categories
           </Typography>
         </Box>
         <Button
@@ -118,19 +132,36 @@ const CategoryList = () => {
                         description: editingCategory ? editingCategory.description : '',
                     }}
                     validationSchema={categoryValidationSchema}
-                    onSubmit={(values, { resetForm }) => {
+                    onSubmit={async (values, { resetForm }) => {
                         if (editingCategory) {
-                            console.log('Updated Category Data:', values);
-                            alert('Category updated! check console');
+                            // Dispatch updateCategory action
+                            const res = await dispatch(updateCategory({ id: editingCategory._id, data: values }));
+
+                            if (res.meta.requestStatus === 'fulfilled') {
+                                alert('Category updated successfully!');
+                                // Optionally refresh list if update doesn't return updated item, or trust reducer
+                                dispatch(fetchCategories()); 
+                                resetForm();
+                                handleCancel();
+                            } else {
+                                alert(`Failed to update category: ${res.payload?.message || 'Unknown error'}`);
+                            }
                         } else {
-                            console.log('New Category Data:', values);
-                            alert('Category added! check console');
+                            // Dispatch addCategory action
+                            const res = await dispatch(addCategory(values));
+                            
+                            if (res.meta.requestStatus === 'fulfilled') {
+                                alert('Category added successfully!');
+                                dispatch(fetchCategories()); // Refresh list
+                                resetForm();
+                                handleCancel();
+                            } else {
+                                alert(`Failed to add category: ${res.payload?.message || 'Unknown error'}`);
+                            }
                         }
-                        resetForm();
-                        handleCancel();
                     }}
                 >
-                    {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+                    {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={3}>
                                 <Box>
@@ -142,7 +173,10 @@ const CategoryList = () => {
                                         placeholder="e.g., Residential, Commercial"
                                         name="name"
                                         value={values.name}
-                                        onChange={handleChange}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setFieldValue('name', val.charAt(0).toUpperCase() + val.slice(1));
+                                        }}
                                         onBlur={handleBlur}
                                         error={touched.name && Boolean(errors.name)}
                                         helperText={touched.name && errors.name}
@@ -226,8 +260,8 @@ const CategoryList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {mockCategories.map((row) => (
-              <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+            {categories.map((row) => (
+              <TableRow key={row._id || row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Box
@@ -256,19 +290,60 @@ const CategoryList = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" color="text.secondary">
-                    {row.date}
+                    {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : 'N/A'}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Stack direction="row" spacing={1} justifyContent="flex-end">
                     <IconButton size="small" sx={{ color: '#22C55E' }} onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" sx={{ color: '#EF4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" sx={{ color: '#EF4444' }} onClick={() => handleDelete(row._id || row.id)}><DeleteIcon fontSize="small" /></IconButton>
                   </Stack>
                 </TableCell>
               </TableRow>
             ))}
+             {categories.length === 0 && status !== 'loading' && (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body2" color="text.secondary">No categories found</Typography>
+                  </TableCell>
+                </TableRow>
+             )}
           </TableBody>
         </Table>
+        {/* <TablePagination
+        sx={{ mt: 2 }}
+          component="div"
+          count={pagination.total}
+          page={pagination.page - 1}
+          onPageChange={handleChangePage}
+          rowsPerPage={pagination.limit}
+          rowsPerPageOptions={[10]}
+        /> */}
+
+        <Stack alignItems="center" py={3}>
+          <Pagination
+            count={pagination.totalPages}
+            page={pagination.page}
+            onChange={(event, value) => dispatch(setPage(value))}
+            color="primary"
+            shape="rounded"
+            showFirstButton
+            showLastButton
+            siblingCount={1}       
+            boundaryCount={1}
+            sx={{
+                '& .MuiPaginationItem-root': {
+                    '&.Mui-selected': {
+                        backgroundColor: '#DC0000',
+                        color: 'white',
+                        '&:hover': {
+                            backgroundColor: '#B30000',
+                        },
+                    },
+                },
+            }}
+          />
+        </Stack>
       </TableContainer>
     </Container>
   );
