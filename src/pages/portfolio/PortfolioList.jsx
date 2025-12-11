@@ -258,7 +258,7 @@ const PortfolioList = () => {
                     onClose={() => handleFilterClose('title')}
                     title="Filter by Title"
                     value={tempFilterValues.title}
-                    onChange={(e) => handleFilterInputChange('title', e.target.value)} // Select returns event.target.value
+                    onChange={(e) => handleFilterInputChange('title', e.target.value)}
                     onClear={() => handleFilterClear('title')}
                     onApply={() => handleFilterApply('title')}
                     placeholder="Select title…"
@@ -289,14 +289,16 @@ const PortfolioList = () => {
                     onClose={() => handleFilterClose('category')}
                     title="Filter by Category"
                     value={tempFilterValues.category}
-                    onChange={(e) => handleFilterInputChange('category', e.target.value)} // Select returns event.target.value
+                    onChange={(e) => handleFilterInputChange('category', e.target.value)}
                     onClear={() => handleFilterClear('category')}
                     onApply={() => handleFilterApply('category')}
                     placeholder="Select category…"
-                    options={uniqueValues.category}
+                    options={categories.filter(cat => cat !== 'All Categories')}
+                    freeSolo={false}
                   />
                 </Box>
               </TableCell>
+
 
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
                 <TableSortLabel

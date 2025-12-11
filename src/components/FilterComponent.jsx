@@ -4,10 +4,8 @@ import {
     Button,
     Popover,
     Typography,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
+    TextField,
+    Autocomplete,
 } from '@mui/material';
 
 const FilterComponent = ({
@@ -19,10 +17,10 @@ const FilterComponent = ({
     onChange,
     onClear,
     onApply,
-    placeholder = 'Select value…',
+    placeholder = 'Select or enter value…',
     options = [],
+    freeSolo = true, // set to false if you want to disallow typing
 }) => {
-
     // Ensure unique options
     const uniqueOptions = Array.from(new Set(options));
 
@@ -62,40 +60,59 @@ const FilterComponent = ({
                 >
                     {title}
                 </Typography>
-                {value && (
-                    <Typography
-                        variant="caption"
-                        sx={{
-                            color: '#6B7280',
-                            fontSize: '0.7rem',
-                            fontStyle: 'italic',
-                            display: 'block',
-                            mt: 0.5,
-                        }}
-                    >
-                        Current Filter: "{value}"
-                    </Typography>
-                )}
             </Box>
 
-            {/* Dropdown */}
-            <FormControl fullWidth size="small">
-                <InputLabel>{placeholder}</InputLabel>
-                <Select
-                    value={value || ''}
-                    onChange={(e) => onChange(e)}
-                    label={placeholder}
-                >
-                    {uniqueOptions.map((option) => (
-                        <MenuItem key={option} value={option}>
-                            {option}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+            {/* Autocomplete Input */}
+            <Autocomplete
+                freeSolo={freeSolo}
+                options={uniqueOptions}
+                value={value || null}
+                inputValue={value || ''}
+                onChange={(event, newValue) => {
+
+                    onChange({ target: { value: newValue || '' } });
+                }}
+                onInputChange={(event, newInputValue, reason) => {
+                    if (reason === 'input' || reason === 'clear') {
+                        onChange({ target: { value: newInputValue || '' } });
+                    }
+                }}
+                getOptionLabel={(option) =>
+                    typeof option === 'string' ? option : option?.label || ''
+                }
+                isOptionEqualToValue={(option, val) =>
+                    typeof option === 'string'
+                        ? option === val
+                        : option?.value === val?.value
+                }
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        size="small"
+                        placeholder={placeholder}
+                        autoFocus
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                backgroundColor: 'white',
+                                borderRadius: 1.5,
+                                '& fieldset': { borderColor: '#D1D5DB', borderWidth: '1.5px' },
+                                '&:hover fieldset': { borderColor: '#9CA3AF' },
+                                '&.Mui-focused fieldset': { borderColor: '#DC0000', borderWidth: '2px' },
+                            },
+                            '& .MuiOutlinedInput-input': { fontSize: '0.875rem', padding: '8px 12px' },
+                        }}
+                    />
+                )}
+                fullWidth
+                size="small"
+                sx={{
+                    '& .MuiAutocomplete-popupIndicator': { color: '#6B7280' },
+                    '& .MuiAutocomplete-clearIndicator': { color: '#9CA3AF' },
+                }}
+            />
 
             {/* Actions */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 0.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, mt: 0.5 }}>
                 <Button
                     size="small"
                     variant="contained"
