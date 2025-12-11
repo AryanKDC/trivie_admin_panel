@@ -45,7 +45,7 @@ export const fetchPortfolios = createAsyncThunk(
         const { pagination, search, sort, filters, columnFilters } = getState().portfolio;
 
         const sortFieldMap = {
-            'createdAt': 'created_at',
+            'createdAt': 'createdAt',
             'title': 'title',
             'category': 'category',
         };
@@ -216,7 +216,9 @@ const portfolioSlice = createSlice({
                 state.tags = action.payload;
             })
             .addCase(addPortfolio.fulfilled, (state, action) => {
-
+                state.items.unshift(action.payload.data);
+                state.status = 'succeeded';
+                state.pagination.total += 1;
             })
             .addCase(getPortfolioById.pending, (state) => {
                 state.status = 'loading';

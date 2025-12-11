@@ -39,7 +39,6 @@ function Navbar() {
   };
 
   const isActive = (path) => {
-    // Special handling for Portfolio which is at root '/'
     if (path === '/') {
       return location.pathname === '/' || location.pathname.startsWith('/portfolio');
     }
@@ -114,7 +113,7 @@ function Navbar() {
         <Toolbar
           sx={{
             justifyContent: 'space-between',
-            minHeight: { xs: '64px', md: '95px !important' }, // taller header on desktop only
+            minHeight: { xs: '64px', md: '95px !important' },
             px: '0 !important'
           }}
         >
@@ -124,7 +123,7 @@ function Navbar() {
             src="/company_logo.png"
             alt="Logo"
             sx={{
-              height: { xs: 40, md: 60 }, // responsive logo size
+              height: { xs: 40, md: 60 },
               cursor: 'pointer',
               objectFit: 'contain'
             }}
@@ -159,12 +158,11 @@ function Navbar() {
           </IconButton>
         </Toolbar>
 
-        {/* 🧭 Nav Links - Desktop Only */}
         <Box
           sx={{
             display: { xs: 'none', md: 'flex' },
-            gap: 6, // more spacing horizontally
-            mt: 2.5, // spacing from top
+            gap: 6,
+            mt: 2.5,
           }}
         >
           {navLinks.map((link) => {

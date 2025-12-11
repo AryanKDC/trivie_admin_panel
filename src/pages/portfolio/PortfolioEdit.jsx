@@ -24,6 +24,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addPortfolio, getPortfolioById, updatePortfolio, resetState, fetchCategories } from "../../store/slices/portfolioSlice";
 import { useEffect } from "react";
+import Swal from 'sweetalert2';
+import QuillEditor from '../../components/QuillEditor';
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -76,8 +78,6 @@ const PortfolioEdit = () => {
 
   useEffect(() => {
     if (isEditMode && currentPortfolio) {
-      console.log('🔍 Loading portfolio data:', currentPortfolio);
-
       const newInitialValues = {
         projectTitle: currentPortfolio.title || "",
         category: Array.isArray(currentPortfolio.category)
@@ -90,7 +90,6 @@ const PortfolioEdit = () => {
         result: currentPortfolio.the_result || "",
       };
 
-      console.log('📝 Setting initial values:', newInitialValues);
       setInitialValues(newInitialValues);
 
       // Set Previews
@@ -99,14 +98,12 @@ const PortfolioEdit = () => {
         const thumbnailURL = currentPortfolio.thumbnail_image.startsWith('http')
           ? currentPortfolio.thumbnail_image
           : `${baseURL}${currentPortfolio.thumbnail_image}`;
-        console.log('🖼️ Thumbnail URL:', thumbnailURL);
         setThumbnailPreview(thumbnailURL);
       }
       if (currentPortfolio.image_gallery && currentPortfolio.image_gallery.length > 0) {
         const galleryURLs = currentPortfolio.image_gallery.map(img =>
           img.startsWith('http') ? img : `${baseURL}${img}`
         );
-        console.log('🖼️ Gallery URLs:', galleryURLs);
         setGalleryPreviews(galleryURLs);
       }
     }
@@ -226,7 +223,21 @@ const PortfolioEdit = () => {
             boxShadow: "none",
             "&:hover": { bgcolor: "#b30000", boxShadow: "none" },
           }}
-          onClick={() => navigate("/")}
+          onClick={async () => {
+            const result = await Swal.fire({
+              title: isEditMode ? 'Cancel Edit?' : 'Cancel Adding?',
+              text: "All unsaved changes will be lost!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#DC0000',
+              cancelButtonColor: '#6B7280',
+              confirmButtonText: 'Yes, cancel',
+              cancelButtonText: 'Continue',
+            });
+            if (result.isConfirmed) {
+              navigate("/");
+            }
+          }}
         >
           Cancel
         </Button>
@@ -293,9 +304,21 @@ const PortfolioEdit = () => {
               }
 
               if (res?.payload?.status === true) {
+                await Swal.fire({
+                  title: 'Success!',
+                  text: isEditMode ? 'Portfolio updated successfully!' : 'Portfolio added successfully!',
+                  icon: 'success',
+                  confirmButtonColor: '#DC0000',
+                });
                 navigate("/");
               } else {
                 console.log("Error saving portfolio:", res);
+                await Swal.fire({
+                  title: 'Error!',
+                  text: res?.payload?.message || 'Failed to save portfolio. Please try again.',
+                  icon: 'error',
+                  confirmButtonColor: '#DC0000',
+                });
               }
             }}
           >
@@ -490,76 +513,37 @@ const PortfolioEdit = () => {
                   </Box>
 
                   {/* Challenge */}
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={1}>
-                      The Challenge <span style={{ color: "#DC0000" }}>*</span>
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      placeholder="Describe the challenge faced in this project..."
-                      name="challenge"
-                      value={values.challenge}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.challenge && Boolean(errors.challenge)}
-                      helperText={touched.challenge && errors.challenge}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: 1.5 },
-                      }}
-                    />
-                  </Box>
+                  <QuillEditor
+                    label="The Challenge"
+                    value={values.challenge}
+                    onChange={(value) => setFieldValue('challenge', value)}
+                    error={errors.challenge}
+                    touched={touched.challenge}
+                    placeholder="Describe the challenge faced in this project..."
+                    required
+                  />
 
                   {/* Solution */}
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={1}>
-                      Our Solution <span style={{ color: "#DC0000" }}>*</span>
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      placeholder="Describe your solution to the challenge..."
-                      name="solution"
-                      value={values.solution}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.solution && Boolean(errors.solution)}
-                      helperText={touched.solution && errors.solution}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: 1.5 },
-                      }}
-                    />
-                  </Box>
+                  <QuillEditor
+                    label="Our Solution"
+                    value={values.solution}
+                    onChange={(value) => setFieldValue('solution', value)}
+                    error={errors.solution}
+                    touched={touched.solution}
+                    placeholder="Describe your solution to the challenge..."
+                    required
+                  />
 
                   {/* Result */}
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={1}>
-                      The Result <span style={{ color: "#DC0000" }}>*</span>
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      placeholder="Describe the outcome and results achieved..."
-                      name="result"
-                      value={values.result}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.result && Boolean(errors.result)}
-                      helperText={touched.result && errors.result}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: 1.5 },
-                      }}
-                    />
-                  </Box>
+                  <QuillEditor
+                    label="The Result"
+                    value={values.result}
+                    onChange={(value) => setFieldValue('result', value)}
+                    error={errors.result}
+                    touched={touched.result}
+                    placeholder="Describe the outcome and results achieved..."
+                    required
+                  />
 
                   {/* Actions */}
                   <Box mt={2}>
@@ -568,7 +552,7 @@ const PortfolioEdit = () => {
                         type="submit"
                         variant="contained"
                         size="large"
-                        onClick={() => console.log("Data added:", values)}
+                        // onClick={() => console.log("Data added:", values)}
                         sx={{
                           flex: 1,
                           bgcolor: "#DC0000",
@@ -593,7 +577,21 @@ const PortfolioEdit = () => {
                           minWidth: 100,
                           "&:hover": { borderColor: "#D1D5DB", bgcolor: "#f9fafb" },
                         }}
-                        onClick={() => navigate("/")}
+                        onClick={async () => {
+                          const result = await Swal.fire({
+                            title: isEditMode ? 'Cancel Editing Portfolio?' : 'Cancel Adding Portfolio?',
+                            text: "All unsaved changes will be lost!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#DC0000',
+                            cancelButtonColor: '#6B7280',
+                            confirmButtonText: 'Yes, cancel',
+                            cancelButtonText: 'Continue editing',
+                          });
+                          if (result.isConfirmed) {
+                            navigate("/");
+                          }
+                        }}
                       >
                         Cancel
                       </Button>

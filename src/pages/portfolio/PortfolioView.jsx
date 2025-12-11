@@ -14,6 +14,7 @@ import {
 import { Close as CloseIcon } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { getPortfolioById } from '../../store/slices/portfolioSlice';
+import DOMPurify from 'dompurify';
 
 const PortfolioView = ({ open, onClose, id }) => {
     const dispatch = useDispatch();
@@ -121,9 +122,19 @@ const PortfolioView = ({ open, onClose, id }) => {
                                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: '#111827' }}>
                                         Challenge
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                                        {currentPortfolio.the_challenge}
-                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            '& p': { margin: '0 0 8px 0', lineHeight: 1.6, fontSize: '0.875rem', color: 'text.secondary' },
+                                            '& p:last-child': { marginBottom: 0 },
+                                            '& ul': { margin: '8px 0', paddingLeft: '24px', listStyleType: 'disc' },
+                                            '& ol': { margin: '8px 0', paddingLeft: '24px', listStyleType: 'decimal' },
+                                            '& li': { marginBottom: '4px', fontSize: '0.875rem', color: 'text.secondary', display: 'list-item' },
+                                            '& h1, & h2, & h3': { marginTop: '12px', marginBottom: '8px', color: '#111827' },
+                                            '& strong': { fontWeight: 600 },
+                                            '& a': { color: '#DC0000', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }
+                                        }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentPortfolio.the_challenge) }}
+                                    />
                                 </Box>
                             )}
 
@@ -132,9 +143,19 @@ const PortfolioView = ({ open, onClose, id }) => {
                                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: '#111827' }}>
                                         Solution
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                                        {currentPortfolio.our_solution}
-                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            '& p': { margin: '0 0 8px 0', lineHeight: 1.6, fontSize: '0.875rem', color: 'text.secondary' },
+                                            '& p:last-child': { marginBottom: 0 },
+                                            '& ul': { margin: '8px 0', paddingLeft: '24px', listStyleType: 'disc' },
+                                            '& ol': { margin: '8px 0', paddingLeft: '24px', listStyleType: 'decimal' },
+                                            '& li': { marginBottom: '4px', fontSize: '0.875rem', color: 'text.secondary', display: 'list-item' },
+                                            '& h1, & h2, & h3': { marginTop: '12px', marginBottom: '8px', color: '#111827' },
+                                            '& strong': { fontWeight: 600 },
+                                            '& a': { color: '#DC0000', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }
+                                        }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentPortfolio.our_solution) }}
+                                    />
                                 </Box>
                             )}
 
@@ -143,9 +164,19 @@ const PortfolioView = ({ open, onClose, id }) => {
                                     <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: '#111827' }}>
                                         Result
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                                        {currentPortfolio.the_result}
-                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            '& p': { margin: '0 0 8px 0', lineHeight: 1.6, fontSize: '0.875rem', color: 'text.secondary' },
+                                            '& p:last-child': { marginBottom: 0 },
+                                            '& ul': { margin: '8px 0', paddingLeft: '24px', listStyleType: 'disc' },
+                                            '& ol': { margin: '8px 0', paddingLeft: '24px', listStyleType: 'decimal' },
+                                            '& li': { marginBottom: '4px', fontSize: '0.875rem', color: 'text.secondary', display: 'list-item' },
+                                            '& h1, & h2, & h3': { marginTop: '12px', marginBottom: '8px', color: '#111827' },
+                                            '& strong': { fontWeight: 600 },
+                                            '& a': { color: '#DC0000', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }
+                                        }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentPortfolio.the_result) }}
+                                    />
                                 </Box>
                             )}
                         </Stack>
