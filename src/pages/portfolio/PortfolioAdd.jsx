@@ -137,7 +137,7 @@ const PortfolioAdd = () => {
         />
         {icon || <CloudUploadIcon sx={{ fontSize: 32, mb: 1, color: "#9ca3af" }} />}
         <Typography variant="body2">{subLabel || "Click to upload"}</Typography>
-        {multiple && <Typography variant="caption" sx={{ mt: 0.5 }}>You can select multiple images_gallery at once</Typography>}
+        {multiple && <Typography variant="caption" sx={{ mt: 0.5 }}>You can select multiple images at once</Typography>}
       </Button>
       {touched && error && (
         <FormHelperText error>{error}</FormHelperText>

@@ -20,9 +20,10 @@ import {
 } from "@mui/icons-material";
 import { FastField, Formik } from "formik";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addPortfolio } from "../../store/slices/portfolioSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addPortfolio, getPortfolioById, updatePortfolio, resetState } from "../../store/slices/portfolioSlice";
+import { useEffect } from "react";
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -44,12 +45,26 @@ const categories = [
 ];
 
 const PortfolioEdit = () => {
-  const navigate = useNavigate();
+  const { id } = useParams();
   const dispatch = useDispatch();
+  const { currentPortfolio } = useSelector((state) => state.portfolio);
+  const isEditMode = Boolean(id);
+
+  const navigate = useNavigate();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
 
-  const initialValues = {
+  useEffect(() => {
+    if (isEditMode) {
+      dispatch(getPortfolioById(id));
+    } else {
+      dispatch(resetState());
+    }
+  }, [id, isEditMode, dispatch]);
+
+
+  // Populate form when data fetches
+  const [initialValues, setInitialValues] = useState({
     projectTitle: "",
     category: "",
     thumbnail_image: null,
@@ -57,7 +72,45 @@ const PortfolioEdit = () => {
     challenge: "",
     solution: "",
     result: "",
-  };
+  });
+
+  useEffect(() => {
+    if (isEditMode && currentPortfolio) {
+      console.log('🔍 Loading portfolio data:', currentPortfolio);
+
+      const newInitialValues = {
+        projectTitle: currentPortfolio.title || "",
+        category: Array.isArray(currentPortfolio.category)
+          ? currentPortfolio.category[0] || ""
+          : currentPortfolio.category || "",
+        thumbnail_image: currentPortfolio.thumbnail_image || null,
+        images_gallery: currentPortfolio.image_gallery || [],
+        challenge: currentPortfolio.the_challenge || "",
+        solution: currentPortfolio.our_solution || "",
+        result: currentPortfolio.the_result || "",
+      };
+
+      console.log('📝 Setting initial values:', newInitialValues);
+      setInitialValues(newInitialValues);
+
+      // Set Previews
+      const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || import.meta.env.REACT_APP_BACKEND_BASE_URL || '';
+      if (currentPortfolio.thumbnail_image) {
+        const thumbnailURL = currentPortfolio.thumbnail_image.startsWith('http')
+          ? currentPortfolio.thumbnail_image
+          : `${baseURL}${currentPortfolio.thumbnail_image}`;
+        console.log('🖼️ Thumbnail URL:', thumbnailURL);
+        setThumbnailPreview(thumbnailURL);
+      }
+      if (currentPortfolio.image_gallery && currentPortfolio.image_gallery.length > 0) {
+        const galleryURLs = currentPortfolio.image_gallery.map(img =>
+          img.startsWith('http') ? img : `${baseURL}${img}`
+        );
+        console.log('🖼️ Gallery URLs:', galleryURLs);
+        setGalleryPreviews(galleryURLs);
+      }
+    }
+  }, [currentPortfolio, isEditMode]);
 
   const handleThumbnailChange = (e, setFieldValue) => {
     const file = e.target.files[0];
@@ -91,7 +144,7 @@ const PortfolioEdit = () => {
     touched,
     onChange,
     multiple = false,
-    dashedColor = "#ccc", // default gray dashed
+    dashedColor = "#ccc",
   }) => (
     <Box>
       <Typography
@@ -156,10 +209,7 @@ const PortfolioEdit = () => {
       >
         <Box>
           <Typography variant="h6" fontWeight="bold" sx={{ color: "#111827" }}>
-            Portfolio Projects
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            6 projects
+            {isEditMode ? "Edit Portfolio" : "Add Portfolio"}
           </Typography>
         </Box>
         <Button
@@ -176,7 +226,7 @@ const PortfolioEdit = () => {
             boxShadow: "none",
             "&:hover": { bgcolor: "#b30000", boxShadow: "none" },
           }}
-          onClick={() => navigate("/")} // Assuming cancel goes back
+          onClick={() => navigate("/")}
         >
           Cancel
         </Button>
@@ -188,12 +238,12 @@ const PortfolioEdit = () => {
           borderRadius: 3,
           boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.05)",
           border: "1px solid #E5E7EB",
-          overflow: "visible", // for close icons hanging out if needed
+          overflow: "visible",
         }}
       >
         <CardContent sx={{ p: 4 }}>
           <Typography variant="body1" fontWeight={500} color="text.secondary" mb={3}>
-            Add New Portfolio Project
+            {isEditMode ? "Edit Existing Portfolio" : "Add New Portfolio Project"}
           </Typography>
 
           <Formik
@@ -201,26 +251,51 @@ const PortfolioEdit = () => {
             validationSchema={validationSchema}
             validateOnChange={false}
             validateOnBlur={true}
+            enableReinitialize={true}
             onSubmit={async (values) => {
-              const formData = new FormData();
-              formData.append("projectTitle", values.projectTitle);
-              formData.append("category", values.category);
-              formData.append("challenge", values.challenge);
-              formData.append("solution", values.solution);
-              formData.append("result", values.result);
 
-              if (values.thumbnail_image) {
+              const formData = new FormData();
+              formData.append("title", values.projectTitle);
+              formData.append("category", values.category);
+              formData.append("the_challenge", values.challenge);
+              formData.append("our_solution", values.solution);
+              formData.append("the_result", values.result);
+
+              if (values.thumbnail_image && values.thumbnail_image instanceof File) {
                 formData.append("thumbnail_image", values.thumbnail_image);
               }
 
-              values.images_gallery.forEach(file => formData.append("images_gallery", file));
+              const existingImages = [];
+              const newImages = [];
 
-              const res = await dispatch(addPortfolio(formData));
+              values.images_gallery.forEach(item => {
+                if (item instanceof File) {
+                  newImages.push(item);
+                } else if (typeof item === 'string') {
+                  existingImages.push(item);
+                }
+              });
+
+              newImages.forEach(file => {
+                formData.append("images_gallery", file);
+              });
+              if (existingImages.length > 0) {
+                formData.append("existing_images", JSON.stringify(existingImages));
+              } else {
+                formData.append("existing_images", JSON.stringify([]));
+              }
+
+              let res;
+              if (isEditMode) {
+                res = await dispatch(updatePortfolio({ id, formData }));
+              } else {
+                res = await dispatch(addPortfolio(formData));
+              }
 
               if (res?.payload?.status === true) {
                 navigate("/");
               } else {
-                console.log("Error adding portfolio:", res);
+                console.log("Error saving portfolio:", res);
               }
             }}
           >
@@ -246,7 +321,7 @@ const PortfolioEdit = () => {
                         <TextField
                           fullWidth
                           placeholder="Enter project title"
-                          {...field}   // gives value + onChange + name
+                          {...field}
                           error={meta.touched && Boolean(meta.error)}
                           helperText={meta.touched && meta.error}
                           variant="outlined"
@@ -296,7 +371,7 @@ const PortfolioEdit = () => {
                       error={errors.thumbnail_image}
                       touched={touched.thumbnail_image}
                       onChange={(e) => handleThumbnailChange(e, setFieldValue)}
-                      dashedColor="#90caf9" // slight blue tint as per some designs, or stick to gray
+                      dashedColor="#90caf9"
                     />
                     {thumbnailPreview && (
                       <Box mt={2} position="relative" width="fit-content">
@@ -333,7 +408,6 @@ const PortfolioEdit = () => {
 
                   {/* Gallery Images */}
                   <Box>
-                    {/* Red dashed color for images_gallery as seen in some designs for 'required' or just style */}
                     <Typography
                       variant="body2"
                       fontWeight={500}
@@ -496,7 +570,7 @@ const PortfolioEdit = () => {
                         size="large"
                         onClick={() => console.log("Data added:", values)}
                         sx={{
-                          flex: 1, // "Add Portfolio" takes more space? Or standard width. Image shows full red bar
+                          flex: 1,
                           bgcolor: "#DC0000",
                           textTransform: "none",
                           fontWeight: 600,
@@ -505,7 +579,7 @@ const PortfolioEdit = () => {
                           "&:hover": { bgcolor: "#b30000", boxShadow: "none" },
                         }}
                       >
-                        Add Portfolio
+                        {isEditMode ? "Update Portfolio" : "Add Portfolio"}
                       </Button>
                       <Button
                         variant="outlined"
