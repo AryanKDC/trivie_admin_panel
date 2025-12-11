@@ -161,7 +161,7 @@ const CategoryList = () => {
                         }
                     }}
                 >
-                    {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+                    {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
                         <form onSubmit={handleSubmit}>
                             <Stack spacing={3}>
                                 <Box>
@@ -173,7 +173,10 @@ const CategoryList = () => {
                                         placeholder="e.g., Residential, Commercial"
                                         name="name"
                                         value={values.name}
-                                        onChange={handleChange}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setFieldValue('name', val.charAt(0).toUpperCase() + val.slice(1));
+                                        }}
                                         onBlur={handleBlur}
                                         error={touched.name && Boolean(errors.name)}
                                         helperText={touched.name && errors.name}
