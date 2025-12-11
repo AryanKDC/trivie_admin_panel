@@ -3,7 +3,7 @@ import axiosInstance from '../../api/axios';
 
 const initialState = {
     items: [],
-    status: 'idle', // idle | loading | succeeded | failed
+    status: 'idle',
     error: null,
     pagination: {
         page: 1,
@@ -18,52 +18,68 @@ const initialState = {
         category: '',
     },
     search: '',
-    tags: [], // Available tags for autocomplete
+    tags: [],
     sort: {
         key: 'createdAt',
         direction: 'desc',
     },
+    columnFilters: {
+        title: [],
+        category: [],
+    },
     currentPortfolio: null,
 };
 
-export const fetchTags = createAsyncThunk('portfolio/fetchTags', async (_, { rejectWithValue }) => {
+export const fetchCategories = createAsyncThunk('portfolio/fetchCategories', async (_, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.get('/portfolio/tags');
+        const response = await axiosInstance.get('/portfolio/categories');
         return response.data.data;
     } catch (error) {
-        return rejectWithValue(error.response?.data || 'Failed to fetch tags');
+        return rejectWithValue(error.response?.data || 'Failed to fetch categories');
     }
 });
 
 export const fetchPortfolios = createAsyncThunk(
     'portfolio/fetchPortfolios',
     async (_, { getState }) => {
-        const { pagination, search, sort, filters } = getState().portfolio;
+        const { pagination, search, sort, filters, columnFilters } = getState().portfolio;
 
-        // Query params for pagination and sorting
+        const sortFieldMap = {
+            'createdAt': 'created_at',
+            'title': 'title',
+            'category': 'category',
+        };
+
+        const sortBy = sortFieldMap[sort.key] || sort.key;
+
         const params = {
             page: pagination.page,
             limit: pagination.limit,
-            sortBy: sort.key,
+            sortBy: sortBy,
             sort: sort.direction,
-            search: typeof search === 'string' ? search : '', // Global search, ensure strictly string
+            search: typeof search === 'string' ? search : '',
         };
 
-        // Body for dynamic filters
         const body = {
             filter: {},
         };
 
-        // Map filters to body
         if (filters.title) body.filter.title = filters.title;
         if (filters.page) body.filter.page = filters.page;
         if (filters.category && filters.category !== 'All Categories') body.filter.category = filters.category;
         if (filters.tags) {
-            // Split tags by comma and trim
+
             body.filter.tags = filters.tags
                 .split(',')
                 .map((tag) => tag.trim())
                 .filter((tag) => tag);
+        }
+
+        if (columnFilters.title && columnFilters.title.length > 0) {
+            body.filter.title = columnFilters.title[0];
+        }
+        if (columnFilters.category && columnFilters.category.length > 0) {
+            body.filter.category = columnFilters.category;
         }
 
         const response = await axiosInstance.post('/portfolio/get', body, { params });
@@ -133,31 +149,46 @@ const portfolioSlice = createSlice({
     reducers: {
         setSearch: (state, action) => {
             state.search = action.payload;
-            state.pagination.page = 1; // Reset page on search
+            state.pagination.page = 1;
         },
         setFilter: (state, action) => {
             const { key, value } = action.payload;
             state.filters[key] = value;
-            state.pagination.page = 1; // Reset page on filter
+            state.pagination.page = 1;
         },
         setSort: (state, action) => {
             const { key } = action.payload;
+            const defaultSort = { key: 'createdAt', direction: 'desc' };
+
             if (state.sort.key === key) {
                 if (state.sort.direction === 'asc') {
                     state.sort.direction = 'desc';
                 } else if (state.sort.direction === 'desc') {
-                    // Reset to default (e.g., createdAt desc) or empty
-                    state.sort.key = 'createdAt';
-                    state.sort.direction = 'desc';
+                    if (key === defaultSort.key) {
+                        state.sort.direction = 'asc';
+                    } else {
+                        state.sort.key = defaultSort.key;
+                        state.sort.direction = defaultSort.direction;
+                    }
                 }
             } else {
                 state.sort.key = key;
                 state.sort.direction = 'asc';
             }
-            state.pagination.page = 1; // Reset page on sort change
+            state.pagination.page = 1;
         },
         setPage: (state, action) => {
             state.pagination.page = action.payload;
+        },
+        setColumnFilter: (state, action) => {
+            const { column, values } = action.payload;
+            state.columnFilters[column] = values;
+            state.pagination.page = 1;
+        },
+        clearColumnFilter: (state, action) => {
+            const column = action.payload;
+            state.columnFilters[column] = [];
+            state.pagination.page = 1;
         },
         resetState: (state) => {
             return initialState;
@@ -181,11 +212,11 @@ const portfolioSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.error.message;
             })
-            .addCase(fetchTags.fulfilled, (state, action) => {
+            .addCase(fetchCategories.fulfilled, (state, action) => {
                 state.tags = action.payload;
             })
             .addCase(addPortfolio.fulfilled, (state, action) => {
-                // Optionally refresh list or handle success
+
             })
             .addCase(getPortfolioById.pending, (state) => {
                 state.status = 'loading';
@@ -200,7 +231,6 @@ const portfolioSlice = createSlice({
                 state.error = action.payload;
             })
             .addCase(updatePortfolio.fulfilled, (state, action) => {
-                // Update the item in the list if it exists
                 const index = state.items.findIndex(item => item._id === action.payload.data?._id);
                 if (index !== -1) {
                     state.items[index] = action.payload.data;
@@ -208,14 +238,12 @@ const portfolioSlice = createSlice({
                 state.status = 'succeeded';
             })
             .addCase(deletePortfolio.fulfilled, (state, action) => {
-                // Remove the item from existing list
                 state.items = state.items.filter(item => item._id !== action.meta.arg);
-                // Note: action.meta.arg contains the 'id' passed to the thunk
                 state.status = 'succeeded';
             });
     },
 });
 
-export const { setSearch, setFilter, setSort, setPage, resetState } = portfolioSlice.actions;
+export const { setSearch, setFilter, setSort, setPage, setColumnFilter, clearColumnFilter, resetState } = portfolioSlice.actions;
 
 export default portfolioSlice.reducer;

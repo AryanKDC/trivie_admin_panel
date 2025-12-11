@@ -32,28 +32,81 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPortfolios, setFilter, setSearch, deletePortfolio, setPage, setSort } from '../../store/slices/portfolioSlice';
-import { useEffect, useState } from 'react';
+import { fetchPortfolios, setFilter, setSearch, deletePortfolio, setPage, setSort, fetchCategories } from '../../store/slices/portfolioSlice';
+import { useEffect, useState, useMemo } from 'react';
 import PortfolioView from './PortfolioView';
-
-const categories = ['All Categories', 'Residential', 'Hospitality', 'Office', 'Restaurant', 'Retail'];
+import FilterComponent from '../../components/FilterComponent';
 
 const PortfolioList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { items: portfolios, status, search, filters, pagination, sort } = useSelector((state) => state.portfolio);
+  const { items: portfolios, status, search, filters, pagination, sort, tags } = useSelector((state) => state.portfolio);
   const [viewOpen, setViewOpen] = useState(false);
   const [viewId, setViewId] = useState(null);
+  const [filterAnchorEl, setFilterAnchorEl] = useState({});
+  const [tempFilterValues, setTempFilterValues] = useState({ title: '', category: '' });
+
+  // Get categories with 'All Categories' option
+  const categories = useMemo(() => {
+    return ['All Categories', ...(tags || [])];
+  }, [tags]);
 
   const handleView = (id) => {
     setViewId(id);
     setViewOpen(true);
   };
 
+  const handleFilterClick = (event, column) => {
+    setFilterAnchorEl({ ...filterAnchorEl, [column]: event.currentTarget });
+    // Set temp value to current filter value
+    setTempFilterValues({ ...tempFilterValues, [column]: filters[column] || '' });
+  };
+
+  const handleFilterClose = (column) => {
+    setFilterAnchorEl({ ...filterAnchorEl, [column]: null });
+  };
+
+  const handleFilterInputChange = (column, value) => {
+    setTempFilterValues({ ...tempFilterValues, [column]: value });
+  };
+
+  const handleFilterApply = (column) => {
+    dispatch(setFilter({ key: column, value: tempFilterValues[column] }));
+    handleFilterClose(column);
+  };
+
+  const handleFilterClear = (column) => {
+    setTempFilterValues({ ...tempFilterValues, [column]: '' });
+    dispatch(setFilter({ key: column, value: '' }));
+    handleFilterClose(column);
+  };
+
+  // Get unique values for autocomplete options
+  const uniqueValues = useMemo(() => {
+    const values = {
+      title: new Set(),
+      category: new Set(),
+    };
+
+    portfolios.forEach(item => {
+      if (item.projectTitle || item.title) values.title.add(item.projectTitle || item.title);
+      if (item.category) values.category.add(item.category);
+    });
+
+    return {
+      title: Array.from(values.title).sort(),
+      category: Array.from(values.category).sort(),
+    };
+  }, [portfolios]);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchPortfolios());
-  }, [dispatch, search, filters.category]);
+  }, [dispatch, search, filters.category, filters.title, sort.key, sort.direction, pagination.page]);
 
   const displayData = portfolios || [];
 
@@ -106,7 +159,7 @@ const PortfolioList = () => {
             startIcon={<AddIcon />}
             onClick={() => navigate('/portfolio/add')}
             sx={{
-              backgroundColor: '#DC0000', // Red color
+              backgroundColor: '#DC0000',
               textTransform: 'none',
               py: 1.5,
               fontWeight: 600,
@@ -184,23 +237,67 @@ const PortfolioList = () => {
             <TableRow>
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>Thumbnail</TableCell>
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
-                <TableSortLabel
-                  active={sort?.key === 'title'}
-                  direction={sort?.key === 'title' ? sort.direction : 'asc'}
-                  onClick={() => dispatch(setSort({ key: 'title' }))}
-                >
-                  Title
-                </TableSortLabel>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TableSortLabel
+                    active={sort?.key === 'title'}
+                    direction={sort?.key === 'title' ? sort.direction : 'asc'}
+                    onClick={() => dispatch(setSort({ key: 'title' }))}
+                  >
+                    Title
+                  </TableSortLabel>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleFilterClick(e, 'title')}
+                    sx={{ color: filters.title ? '#DC0000' : '#9CA3AF', padding: 0.5 }}
+                  >
+                    <FilterListIcon fontSize="small" />
+                  </IconButton>
+                  <FilterComponent
+                    open={Boolean(filterAnchorEl.title)}
+                    anchorEl={filterAnchorEl.title}
+                    onClose={() => handleFilterClose('title')}
+                    title="Filter by Title"
+                    value={tempFilterValues.title}
+                    onChange={(e) => handleFilterInputChange('title', e.target.value)} // Select returns event.target.value
+                    onClear={() => handleFilterClear('title')}
+                    onApply={() => handleFilterApply('title')}
+                    placeholder="Select title…"
+                    options={uniqueValues.title}
+                  />
+                </Box>
               </TableCell>
+
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
-                <TableSortLabel
-                  active={sort?.key === 'category'}
-                  direction={sort?.key === 'category' ? sort.direction : 'asc'}
-                  onClick={() => dispatch(setSort({ key: 'category' }))}
-                >
-                  Category
-                </TableSortLabel>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TableSortLabel
+                    active={sort?.key === 'category'}
+                    direction={sort?.key === 'category' ? sort.direction : 'asc'}
+                    onClick={() => dispatch(setSort({ key: 'category' }))}
+                  >
+                    Category
+                  </TableSortLabel>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => handleFilterClick(e, 'category')}
+                    sx={{ color: filters.category ? '#DC0000' : '#9CA3AF', padding: 0.5 }}
+                  >
+                    <FilterListIcon fontSize="small" />
+                  </IconButton>
+                  <FilterComponent
+                    open={Boolean(filterAnchorEl.category)}
+                    anchorEl={filterAnchorEl.category}
+                    onClose={() => handleFilterClose('category')}
+                    title="Filter by Category"
+                    value={tempFilterValues.category}
+                    onChange={(e) => handleFilterInputChange('category', e.target.value)} // Select returns event.target.value
+                    onClear={() => handleFilterClear('category')}
+                    onApply={() => handleFilterApply('category')}
+                    placeholder="Select category…"
+                    options={uniqueValues.category}
+                  />
+                </Box>
               </TableCell>
+
               <TableCell sx={{ fontWeight: 600, color: '#374151', borderBottom: '1px solid #E5E7EB' }}>
                 <TableSortLabel
                   active={sort?.key === 'createdAt'}

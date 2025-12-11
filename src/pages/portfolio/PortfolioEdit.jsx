@@ -22,7 +22,7 @@ import { FastField, Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addPortfolio, getPortfolioById, updatePortfolio, resetState } from "../../store/slices/portfolioSlice";
+import { addPortfolio, getPortfolioById, updatePortfolio, resetState, fetchCategories } from "../../store/slices/portfolioSlice";
 import { useEffect } from "react";
 
 // Validation Schema
@@ -36,23 +36,23 @@ const validationSchema = Yup.object({
   result: Yup.string().required("Result description is required"),
 });
 
-const categories = [
-  "Residential",
-  "Hospitality",
-  "Office",
-  "Restaurant",
-  "Retail",
-];
-
 const PortfolioEdit = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { currentPortfolio } = useSelector((state) => state.portfolio);
   const isEditMode = Boolean(id);
 
+  // Get categories from Redux store
+  const categories = useSelector((state) => state.portfolio.tags || []);
+
   const navigate = useNavigate();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   useEffect(() => {
     if (isEditMode) {

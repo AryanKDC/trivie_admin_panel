@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -21,8 +21,8 @@ import {
 import { FastField, Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addPortfolio } from "../../store/slices/portfolioSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addPortfolio, fetchCategories } from "../../store/slices/portfolioSlice";
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -35,19 +35,19 @@ const validationSchema = Yup.object({
   result: Yup.string().required("Result description is required"),
 });
 
-const categories = [
-  "Residential",
-  "Hospitality",
-  "Office",
-  "Restaurant",
-  "Retail",
-];
-
 const PortfolioAdd = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
+
+  // Get categories from Redux store
+  const categories = useSelector((state) => state.portfolio.tags || []);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const initialValues = {
     projectTitle: "",
