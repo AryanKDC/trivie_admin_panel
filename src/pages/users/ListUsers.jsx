@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUsers, addUser, updateUser, deleteUser } from '../../store/slices/userSlice';
 import {
   Box,
   Button,
@@ -32,30 +34,28 @@ import * as Yup from 'yup';
 
 // Validation Schema Generator
 const getValidationSchema = (isEditing) => Yup.object({
-  fullName: Yup.string().required('Full Name is required'),
+  user_name: Yup.string().required('User Name is required'),
   email: Yup.string().email('Invalid email address').required('Email Address is required'),
   password: isEditing 
     ? Yup.string().min(6, 'Password must be at least 6 characters') // Optional on edit
     : Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'), // Required on add
-  role: Yup.string().required('Role is required'),
+  role_id: Yup.string().required('Role is required'),
 });
 
 // Mock Data
-const mockUsers = [
-  {
-    id: 1,
-    name: 'Admin User',
-    email: 'admin@example.com',
-    role: 'Admin',
-    date: 'Jan 1, 2024',
-  }
-];
 
-const roles = ['Admin', 'Editor'];
+
+const roles = ['admin', 'editor'];
 
 const ListUsers = () => {
+  const dispatch = useDispatch();
+  const { users, status, error } = useSelector((state) => state.user);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   // Handle Edit Click
   const handleEditClick = (user) => {
@@ -63,10 +63,20 @@ const ListUsers = () => {
     setShowAddForm(true);
   };
 
-  // Handle Form Cancel
   const handleCancel = () => {
     setShowAddForm(false);
     setEditingUser(null);
+  };
+
+  const handleDelete = async (id) => {
+      if (window.confirm('Are you sure you want to delete this user?')) {
+          try {
+              await dispatch(deleteUser(id)).unwrap();
+              // alert('User deleted successfully'); // Optional: toast notification
+          } catch (err) {
+              alert(`Failed to delete user: ${err}`);
+          }
+      }
   };
 
   return (
@@ -79,7 +89,7 @@ const ListUsers = () => {
             User Management
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {mockUsers.length} users
+            {users.length} users
           </Typography>
         </Box>
         <Button
@@ -122,22 +132,33 @@ const ListUsers = () => {
                 <Formik
                     enableReinitialize // Important for loading editingUser data
                     initialValues={{
-                        fullName: editingUser ? editingUser.name : '',
+                        user_name: editingUser ? (editingUser.user_name || editingUser.name) : '',
                         email: editingUser ? editingUser.email : '',
                         password: '', // Don't pre-fill password
-                        role: editingUser ? editingUser.role : 'Editor',
+                        role_id: editingUser ? (editingUser.role_id || editingUser.role) : 'editor',
                     }}
                     validationSchema={getValidationSchema(!!editingUser)}
-                    onSubmit={(values, { resetForm }) => {
+                    onSubmit={async (values, { resetForm }) => {
                         if (editingUser) {
-                            console.log('Updated User Data:', values);
-                            alert('User updated! check console');
+                            try {
+                                await dispatch(updateUser({ id: editingUser._id, data: values })).unwrap();
+                                alert('User updated successfully!');
+                                setShowAddForm(false);
+                                setEditingUser(null);
+                                resetForm();
+                            } catch (err) {
+                                alert(`Failed to update user: ${err}`);
+                            }
                         } else {
-                            console.log('New User Data:', values);
-                            alert('User added! check console');
+                            try {
+                                await dispatch(addUser(values)).unwrap();
+                                alert('User added successfully!');
+                                setShowAddForm(false);
+                                resetForm();
+                            } catch (err) {
+                                alert(`Failed to add user: ${err}`);
+                            }
                         }
-                        resetForm();
-                        handleCancel();
                     }}
                 >
                     {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
@@ -145,17 +166,17 @@ const ListUsers = () => {
                             <Stack spacing={3}>
                                 <Box>
                                     <Typography variant="body2" fontWeight={500} mb={1}>
-                                        Full Name <span style={{ color: '#DC0000' }}>*</span>
+                                        User Name <span style={{ color: '#DC0000' }}>*</span>
                                     </Typography>
                                     <TextField
                                         fullWidth
-                                        placeholder="Enter full name"
-                                        name="fullName"
-                                        value={values.fullName}
+                                        placeholder="Enter user name"
+                                        name="user_name"
+                                        value={values.user_name}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={touched.fullName && Boolean(errors.fullName)}
-                                        helperText={touched.fullName && errors.fullName}
+                                        error={touched.user_name && Boolean(errors.user_name)}
+                                        helperText={touched.user_name && errors.user_name}
                                         variant="outlined"
                                         sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                                     />
@@ -205,18 +226,20 @@ const ListUsers = () => {
                                     <TextField
                                         select
                                         fullWidth
-                                        name="role"
-                                        value={values.role}
+                                        name="role_id"
+                                        value={values.role_id}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={touched.role && Boolean(errors.role)}
-                                        helperText={touched.role && errors.role}
+                                        error={touched.role_id && Boolean(errors.role_id)}
+                                        helperText={touched.role_id && errors.role_id}
                                         variant="outlined"
-                                        displayEmpty
                                         sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                                     >
+
                                         {roles.map((role) => (
-                                            <MenuItem key={role} value={role}>{role}</MenuItem>
+                                            <MenuItem key={role} value={role}>
+                                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                                            </MenuItem>
                                         ))}
                                     </TextField>
                                     <FormHelperText sx={{ ml: 0 }}>
@@ -280,13 +303,13 @@ const ListUsers = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {mockUsers.map((row) => (
-              <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+            {users.map((row) => (
+              <TableRow key={row._id || row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar sx={{ width: 32, height: 32, bgcolor: '#F3F4F6', color: '#6B7280', fontSize: '1rem' }} />
                     <Typography variant="body2" sx={{ fontWeight: 500, color: '#111827' }}>
-                      {row.name}
+                      {row.user_name || row.name}
                     </Typography>
                   </Stack>
                 </TableCell>
@@ -297,7 +320,7 @@ const ListUsers = () => {
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={row.role}
+                    label={row.role_id || row.role}
                     size="small"
                     icon={<Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#9333EA', ml: 0.5 }} />}
                     sx={{
@@ -313,13 +336,13 @@ const ListUsers = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" color="text.secondary">
-                    {row.date}
+                    {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : row.date}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Stack direction="row" spacing={1} justifyContent="flex-end">
                     <IconButton size="small" sx={{ color: '#22C55E' }} onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" sx={{ color: '#EF4444' }}><DeleteIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" sx={{ color: '#EF4444' }} onClick={() => handleDelete(row._id || row.id)}><DeleteIcon fontSize="small" /></IconButton>
                   </Stack>
                 </TableCell>
               </TableRow>
