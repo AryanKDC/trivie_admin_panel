@@ -19,7 +19,7 @@ export const forgotPassword = createAsyncThunk(
             const response = await axiosInstance.post('/password/forgot-password', { email });
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Failed to send reset password email');
+            return rejectWithValue(error.response?.data?.message || 'Failed to send reset password email');
         }
     }
 );
@@ -28,10 +28,10 @@ export const resetPassword = createAsyncThunk(
     'forgotPassword/resetPassword',
     async ({ token, password }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('/password/reset-password', { token, password });
+            const response = await axiosInstance.post(`/password/reset-password/${token}`, { password });
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Failed to reset password');
+            return rejectWithValue(error.response?.data?.message || 'Failed to reset password');
         }
     }
 );

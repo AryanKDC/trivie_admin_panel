@@ -82,7 +82,7 @@ const ForgotPasswordModal = ({ open, onClose }) => {
 
                             {status === 'failed' && (
                                 <Alert severity="error" sx={{ mb: 2 }}>
-                                    {error?.message || error || 'Failed to send reset email. Please try again.'}
+                                    {error || 'Failed to send reset email. Please try again.'}
                                 </Alert>
                             )}
 

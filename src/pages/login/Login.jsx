@@ -219,7 +219,7 @@ const Login = () => {
               </Box>
 
               {/* Forgot Password Link */}
-              {/* <Box sx={{ textAlign: 'right', mb: 3 }}>
+              <Box sx={{ textAlign: 'right', mb: 3 }}>
                 <Link
                   component="button"
                   type="button"
@@ -241,7 +241,7 @@ const Login = () => {
                 >
                   Forgot Password?
                 </Link>
-              </Box> */}
+              </Box>
 
               <Button
                 fullWidth
