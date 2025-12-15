@@ -23,6 +23,8 @@ import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addPortfolio, fetchCategories } from "../../store/slices/portfolioSlice";
+import Swal from 'sweetalert2';
+import QuillEditor from '../../components/QuillEditor';
 
 // Validation Schema
 const validationSchema = Yup.object({
@@ -176,7 +178,21 @@ const PortfolioAdd = () => {
             boxShadow: "none",
             "&:hover": { bgcolor: "#b30000", boxShadow: "none" },
           }}
-          onClick={() => navigate("/")} // Assuming cancel goes back
+          onClick={async () => {
+            const result = await Swal.fire({
+              title: 'Cancel Adding Portfolio?',
+              text: "All unsaved changes will be lost!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#DC0000',
+              cancelButtonColor: '#6B7280',
+              confirmButtonText: 'Yes, cancel',
+              cancelButtonText: 'Continue editing',
+            });
+            if (result.isConfirmed) {
+              navigate("/");
+            }
+          }}
         >
           Cancel
         </Button>
@@ -218,9 +234,21 @@ const PortfolioAdd = () => {
               const res = await dispatch(addPortfolio(formData));
 
               if (res?.payload?.status === true) {
+                await Swal.fire({
+                  title: 'Success!',
+                  text: 'Portfolio added successfully!',
+                  icon: 'success',
+                  confirmButtonColor: '#DC0000',
+                });
                 navigate("/");
               } else {
                 console.log("Error adding portfolio:", res);
+                await Swal.fire({
+                  title: 'Error!',
+                  text: res?.payload?.message || 'Failed to add portfolio. Please try again.',
+                  icon: 'error',
+                  confirmButtonColor: '#DC0000',
+                });
               }
             }}
           >
@@ -416,76 +444,37 @@ const PortfolioAdd = () => {
                   </Box>
 
                   {/* Challenge */}
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={1}>
-                      The Challenge <span style={{ color: "#DC0000" }}>*</span>
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      placeholder="Describe the challenge faced in this project..."
-                      name="challenge"
-                      value={values.challenge}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.challenge && Boolean(errors.challenge)}
-                      helperText={touched.challenge && errors.challenge}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: 1.5 },
-                      }}
-                    />
-                  </Box>
+                  <QuillEditor
+                    label="The Challenge"
+                    value={values.challenge}
+                    onChange={(value) => setFieldValue('challenge', value)}
+                    error={errors.challenge}
+                    touched={touched.challenge}
+                    placeholder="Describe the challenge faced in this project..."
+                    required
+                  />
 
                   {/* Solution */}
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={1}>
-                      Our Solution <span style={{ color: "#DC0000" }}>*</span>
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      placeholder="Describe your solution to the challenge..."
-                      name="solution"
-                      value={values.solution}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.solution && Boolean(errors.solution)}
-                      helperText={touched.solution && errors.solution}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: 1.5 },
-                      }}
-                    />
-                  </Box>
+                  <QuillEditor
+                    label="Our Solution"
+                    value={values.solution}
+                    onChange={(value) => setFieldValue('solution', value)}
+                    error={errors.solution}
+                    touched={touched.solution}
+                    placeholder="Describe your solution to the challenge..."
+                    required
+                  />
 
                   {/* Result */}
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={1}>
-                      The Result <span style={{ color: "#DC0000" }}>*</span>
-                    </Typography>
-
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      placeholder="Describe the outcome and results achieved..."
-                      name="result"
-                      value={values.result}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.result && Boolean(errors.result)}
-                      helperText={touched.result && errors.result}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": { borderRadius: 1.5 },
-                      }}
-                    />
-                  </Box>
+                  <QuillEditor
+                    label="The Result"
+                    value={values.result}
+                    onChange={(value) => setFieldValue('result', value)}
+                    error={errors.result}
+                    touched={touched.result}
+                    placeholder="Describe the outcome and results achieved..."
+                    required
+                  />
 
                   {/* Actions */}
                   <Box mt={2}>
@@ -494,9 +483,9 @@ const PortfolioAdd = () => {
                         type="submit"
                         variant="contained"
                         size="large"
-                        onClick={() => console.log("Data added:", values)}
+                        // onClick={() => console.log("Data added:", values)}
                         sx={{
-                          flex: 1, // "Add Portfolio" takes more space? Or standard width. Image shows full red bar
+                          flex: 1,
                           bgcolor: "#DC0000",
                           textTransform: "none",
                           fontWeight: 600,
@@ -519,7 +508,21 @@ const PortfolioAdd = () => {
                           minWidth: 100,
                           "&:hover": { borderColor: "#D1D5DB", bgcolor: "#f9fafb" },
                         }}
-                        onClick={() => navigate("/")}
+                        onClick={async () => {
+                          const result = await Swal.fire({
+                            title: 'Cancel Adding Portfolio?',
+                            text: "All unsaved changes will be lost!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#DC0000',
+                            cancelButtonColor: '#6B7280',
+                            confirmButtonText: 'Yes, cancel',
+                            cancelButtonText: 'Continue editing',
+                          });
+                          if (result.isConfirmed) {
+                            navigate("/");
+                          }
+                        }}
                       >
                         Cancel
                       </Button>

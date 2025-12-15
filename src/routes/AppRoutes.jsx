@@ -6,6 +6,7 @@ import ListUsers from "../pages/users/ListUsers";
 import Login from "../pages/login/Login";
 import PortfolioAdd from "../pages/portfolio/PortfolioAdd";
 import PortfolioEdit from "../pages/portfolio/PortfolioEdit";
+import ResetPasswordPage from "../components/ResetPasswordPage";
 
 const AppRoutes = () => (
   <Routes>
@@ -18,6 +19,8 @@ const AppRoutes = () => (
       <Route path="/portfolio/add" element={<PortfolioAdd />} />
       <Route path="/portfolio/edit/:id" element={<PortfolioEdit />} />
     </Route>
+    <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
   </Routes>
 );
 

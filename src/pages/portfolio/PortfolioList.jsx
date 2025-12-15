@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
+  ClearAll as ClearAllIcon,
   DeleteOutline as DeleteIcon,
   EditOutlined as EditIcon,
   FilterList as FilterListIcon,
@@ -36,6 +37,7 @@ import { fetchPortfolios, setFilter, setSearch, deletePortfolio, setPage, setSor
 import { useEffect, useState, useMemo } from 'react';
 import PortfolioView from './PortfolioView';
 import FilterComponent from '../../components/FilterComponent';
+import Swal from 'sweetalert2';
 
 const PortfolioList = () => {
   const navigate = useNavigate();
@@ -81,6 +83,20 @@ const PortfolioList = () => {
     handleFilterClose(column);
   };
 
+  const handleClearAllFilters = () => {
+    // Clear search
+    dispatch(setSearch(''));
+    // Clear all filters
+    dispatch(setFilter({ key: 'title', value: '' }));
+    dispatch(setFilter({ key: 'category', value: '' }));
+    dispatch(setFilter({ key: 'page', value: '' }));
+    dispatch(setFilter({ key: 'tags', value: '' }));
+    // Reset temp filter values
+    setTempFilterValues({ title: '', category: '' });
+    // Reset to page 1
+    dispatch(setPage(1));
+  };
+
   // Get unique values for autocomplete options
   const uniqueValues = useMemo(() => {
     const values = {
@@ -110,9 +126,43 @@ const PortfolioList = () => {
 
   const displayData = portfolios || [];
 
-  const handleDelete = (id) => {
-    dispatch(deletePortfolio(id));
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Delete this portfolio?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#DC0000',
+      cancelButtonColor: '#6B7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      const res = await dispatch(deletePortfolio(id));
+      if (res?.payload?.status === true || res?.type?.includes('fulfilled')) {
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Portfolio has been deleted.',
+          icon: 'success',
+          confirmButtonColor: '#DC0000',
+        });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete portfolio.',
+          icon: 'error',
+          confirmButtonColor: '#DC0000',
+        });
+      }
+    }
   };
+
+  const hasActiveFilters =
+    search?.trim() ||
+    filters.title?.trim() ||
+    filters.category?.trim();
+
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, minHeight: '100vh' }}>
@@ -158,6 +208,7 @@ const PortfolioList = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/portfolio/add')}
+            size="small"
             sx={{
               backgroundColor: '#DC0000',
               textTransform: 'none',
@@ -229,6 +280,31 @@ const PortfolioList = () => {
           </Box>
         </Stack>
       </Card>
+
+      {hasActiveFilters && (
+        <Stack direction="row" mb={2} justifyContent="flex-end">
+          <Button
+            startIcon={<ClearAllIcon />}
+            onClick={handleClearAllFilters}
+            size="small"
+            sx={{
+              textTransform: 'none',
+              backgroundColor: '#DC0000',
+              color: 'white',
+              px: 2,
+              py: 0.75,
+              borderRadius: 2,
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: '#B30000',
+              },
+            }}
+          >
+            Clear All Filters
+          </Button>
+        </Stack>
+      )}
+
 
       {/* Projects Table */}
       <TableContainer component={Card} sx={{ boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.05)', borderRadius: 3, border: '1px solid #E5E7EB' }}>

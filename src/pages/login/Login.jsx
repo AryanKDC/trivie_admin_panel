@@ -11,12 +11,14 @@ import {
   InputAdornment,
   Container,
   IconButton,
+  Link,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import PersonIcon from '@mui/icons-material/Person';
+import ForgotPasswordModal from '../../components/ForgotPasswordModal';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -29,6 +31,7 @@ const Login = () => {
   }, [navigate]);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   const passwordRef = useRef(null);
   const cursorPosRef = useRef(null);
@@ -110,7 +113,7 @@ const Login = () => {
               src="/image.png"
               alt="Trivie Interiors"
               sx={{
-                height: 60,
+                height: 100,
                 mb: 3,
                 objectFit: 'contain',
               }}
@@ -135,13 +138,13 @@ const Login = () => {
             <form onSubmit={formik.handleSubmit}>
               <Box sx={{ textAlign: 'left', mb: 2 }}>
                 <Typography variant="caption" sx={{ color: '#334155', fontWeight: 500, mb: 0.5, display: 'block' }}>
-                  Name
+                  Username
                 </Typography>
                 <TextField
                   fullWidth
                   id="username"
                   name="username"
-                  placeholder="username"
+                  placeholder="Username"
                   variant="outlined"
                   value={formik.values.username}
                   onChange={formik.handleChange}
@@ -167,7 +170,7 @@ const Login = () => {
                 />
               </Box>
 
-              <Box sx={{ textAlign: 'left', mb: 4 }}>
+              <Box sx={{ textAlign: 'left', mb: 1 }}>
                 <Typography variant="caption" sx={{ color: '#334155', fontWeight: 500, mb: 0.5, display: 'block' }}>
                   Password
                 </Typography>
@@ -215,6 +218,31 @@ const Login = () => {
                 />
               </Box>
 
+              {/* Forgot Password Link */}
+              <Box sx={{ textAlign: 'right', mb: 3 }}>
+                <Link
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setForgotPasswordOpen(true);
+                  }}
+                  sx={{
+                    color: '#E50914',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  Forgot Password?
+                </Link>
+              </Box>
+
               <Button
                 fullWidth
                 type="submit"
@@ -232,11 +260,17 @@ const Login = () => {
                   },
                 }}
               >
-                LogIn
+                Sign In
               </Button>
             </form>
           </CardContent>
         </Card>
+
+        {/* Forgot Password Modal */}
+        <ForgotPasswordModal
+          open={forgotPasswordOpen}
+          onClose={() => setForgotPasswordOpen(false)}
+        />
       </Container>
     </Box>
   );
