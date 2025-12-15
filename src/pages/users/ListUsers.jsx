@@ -9,6 +9,7 @@ import {
   Chip,
   Container,
   IconButton,
+  InputAdornment,
   Stack,
   Table,
   TableBody,
@@ -28,6 +29,8 @@ import {
   DeleteOutline as DeleteIcon,
   EditOutlined as EditIcon,
   Close as CloseIcon,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -52,6 +55,12 @@ const ListUsers = () => {
   const { users, status, error } = useSelector((state) => state.user);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -249,7 +258,7 @@ const ListUsers = () => {
                       <TextField
                         fullWidth
                         placeholder={editingUser ? "Leave blank to keep current password" : "Enter password"}
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         name="password"
                         value={values.password}
                         onChange={handleChange}
@@ -257,6 +266,20 @@ const ListUsers = () => {
                         error={touched.password && Boolean(errors.password)}
                         helperText={touched.password && errors.password}
                         variant="outlined"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end"
+                              >
+                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                         sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                       />
                     </Box>

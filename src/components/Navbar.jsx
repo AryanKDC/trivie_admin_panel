@@ -24,13 +24,20 @@ import CloseIcon from '@mui/icons-material/Close';
 const navLinks = [
   { name: 'Portfolio', path: '/', icon: <FolderOpenOutlinedIcon /> },
   { name: 'Categories', path: '/category', icon: <LocalOfferOutlinedIcon /> },
-  { name: 'Users', path: '/users', icon: <PeopleOutlineIcon /> }
+  { name: 'Users', path: '/users', icon: <PeopleOutlineIcon />, adminOnly: true }
 ];
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  // Get user from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const role = user?.role || user?.role_id;
+  const isAdmin = role === 'admin';
+
+  const filteredNavLinks = navLinks.filter(link => !link.adminOnly || isAdmin);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -57,10 +64,10 @@ function Navbar() {
         </IconButton>
       </Box>
       <Box sx={{ px: 2, mb: 2, textAlign: 'center' }}>
-        <img src="/company_logo.png" alt="Logo" style={{ height: 40 }} />
+        <img src="/image.png" alt="Logo" style={{ height: 100 }} />
       </Box>
       <List>
-        {navLinks.map((link) => {
+        {filteredNavLinks.map((link) => {
           const active = isActive(link.path);
           return (
             <ListItem key={link.name} disablePadding>
@@ -120,10 +127,10 @@ function Navbar() {
           {/* Logo */}
           <Box
             component="img"
-            src="/company_logo.png"
+            src="/image.png"
             alt="Logo"
             sx={{
-              height: { xs: 40, md: 60 },
+              height: { xs: 90, md: 100 },
               cursor: 'pointer',
               objectFit: 'contain'
             }}
@@ -165,7 +172,7 @@ function Navbar() {
             mt: 2.5,
           }}
         >
-          {navLinks.map((link) => {
+          {filteredNavLinks.map((link) => {
             const active = isActive(link.path);
             return (
               <Box
