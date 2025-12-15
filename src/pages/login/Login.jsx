@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import PersonIcon from '@mui/icons-material/Person';
 import ForgotPasswordModal from '../../components/ForgotPasswordModal';
+import { CiUser, CiLock } from "react-icons/ci";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ const Login = () => {
                     input: {
                       startAdornment: (
                         <InputAdornment position="start">
-                          <PersonIcon sx={{ color: '#94A3B8' }} />
+                          <CiUser size={25} color='#94A3B8' strokeWidth={1}  />
                         </InputAdornment>
                       ),
                     },
@@ -191,7 +192,7 @@ const Login = () => {
                     input: {
                       startAdornment: (
                         <InputAdornment position="start">
-                          <LockOutlinedIcon sx={{ color: '#94A3B8' }} />
+                          <CiLock size={25} color='#94A3B8' strokeWidth={1} />
                         </InputAdornment>
                       ),
                       endAdornment: (
