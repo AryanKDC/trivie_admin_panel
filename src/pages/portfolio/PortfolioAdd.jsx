@@ -160,9 +160,6 @@ const PortfolioAdd = () => {
           <Typography variant="h6" fontWeight="bold" sx={{ color: "#111827" }}>
             Portfolio Projects
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            6 projects
-          </Typography>
         </Box>
         <Button
           variant="contained"
