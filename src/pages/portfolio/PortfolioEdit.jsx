@@ -12,6 +12,8 @@ import {
   Typography,
   IconButton,
   FormHelperText,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import {
   CloudUpload as CloudUploadIcon,
@@ -50,6 +52,7 @@ const PortfolioEdit = () => {
   const navigate = useNavigate();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -296,12 +299,14 @@ const PortfolioEdit = () => {
                 formData.append("existing_images", JSON.stringify([]));
               }
 
+              setLoading(true);
               let res;
               if (isEditMode) {
                 res = await dispatch(updatePortfolio({ id, formData }));
               } else {
                 res = await dispatch(addPortfolio(formData));
               }
+              setLoading(false);
 
               if (res?.payload?.status === true) {
                 await Swal.fire({
@@ -603,7 +608,14 @@ const PortfolioEdit = () => {
           </Formik>
         </CardContent>
       </Card>
-    </Container>
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </Container >
   );
 };
 
