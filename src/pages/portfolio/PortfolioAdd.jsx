@@ -12,6 +12,8 @@ import {
   Typography,
   IconButton,
   FormHelperText,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import {
   CloudUpload as CloudUploadIcon,
@@ -42,6 +44,7 @@ const PortfolioAdd = () => {
   const dispatch = useDispatch();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Get categories from Redux store
   const categories = useSelector((state) => state.portfolio.tags || []);
@@ -228,7 +231,9 @@ const PortfolioAdd = () => {
 
               values.images_gallery.forEach(file => formData.append("images_gallery", file));
 
+              setLoading(true);
               const res = await dispatch(addPortfolio(formData));
+              setLoading(false);
 
               if (res?.payload?.status === true) {
                 await Swal.fire({
@@ -531,6 +536,13 @@ const PortfolioAdd = () => {
           </Formik>
         </CardContent>
       </Card>
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Container>
   );
 };
