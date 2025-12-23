@@ -122,7 +122,7 @@ const PortfolioList = () => {
 
   useEffect(() => {
     dispatch(fetchPortfolios());
-  }, [dispatch, search, filters.category, filters.title, sort.key, sort.direction, pagination.page]);
+  }, [dispatch, search, filters.category, filters.title, sort.key, sort.direction, pagination.page, pagination.total]);
 
   const displayData = portfolios || [];
 
@@ -174,7 +174,7 @@ const PortfolioList = () => {
             Portfolio Projects
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {portfolios?.length || 0} projects
+            {pagination.total || 0} projects
           </Typography>
         </Box>
         <Stack direction="row" spacing={2} alignItems="center">
