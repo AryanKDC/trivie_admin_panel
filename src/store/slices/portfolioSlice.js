@@ -107,6 +107,7 @@ export const addPortfolio = createAsyncThunk(
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 300000, // 5 minutes for large image uploads
             });
             return response.data;
         } catch (error) {
@@ -123,6 +124,7 @@ export const updatePortfolio = createAsyncThunk(
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 300000, // 5 minutes for large image uploads
             });
             return response.data;
         } catch (error) {
